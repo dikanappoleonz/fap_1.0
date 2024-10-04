@@ -1,35 +1,24 @@
 import paramiko #include library paramiko
 import getpass
+import datetime
 import csv
+import sys
+
+# TimeStamp
+now = datetime.datetime.now()
 
 #inisialisasi connection SSH with paramiko
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh_client.connect(hostname='192.168.88.1', username='admin', password='')
 
-# Banner
-print("""
-░██╗░░░░░░░██╗███████╗██╗░░░░░░█████╗░░█████╗░███╗░░░███╗███████╗
-░██║░░██╗░░██║██╔════╝██║░░░░░██╔══██╗██╔══██╗████╗░████║██╔════╝
-░╚██╗████╗██╔╝█████╗░░██║░░░░░██║░░╚═╝██║░░██║██╔████╔██║█████╗░░
-░░████╔═████║░██╔══╝░░██║░░░░░██║░░██╗██║░░██║██║╚██╔╝██║██╔══╝░░
-░░╚██╔╝░╚██╔╝░███████╗███████╗╚█████╔╝╚█████╔╝██║░╚═╝░██║███████╗
-░░░╚═╝░░░╚═╝░░╚══════╝╚══════╝░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚══════╝
-
-██╗██╗░░░██╗███████╗███╗░░██╗████████╗██╗░█████╗░███╗░░██╗
-██║██║░░░██║██╔════╝████╗░██║╚══██╔══╝██║██╔══██╗████╗░██║
-██║╚██╗░██╔╝█████╗░░██╔██╗██║░░░██║░░░██║██║░░██║██╔██╗██║
-██║░╚████╔╝░██╔══╝░░██║╚████║░░░██║░░░██║██║░░██║██║╚████║
-██║░░╚██╔╝░░███████╗██║░╚███║░░░██║░░░██║╚█████╔╝██║░╚███║
-╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚══╝░░░╚═╝░░░╚═╝░╚════╝░╚═╝░░╚══╝
-
-██████╗░░█████╗░██████╗░███████╗
-╚════██╗██╔══██╗╚════██╗██╔════╝
-░░███╔═╝██║░░██║░░███╔═╝██████╗░
-██╔══╝░░██║░░██║██╔══╝░░╚════██╗
-███████╗╚█████╔╝███████╗██████╔╝
-╚══════╝░╚════╝░╚══════╝╚═════╝░""")
+# open file Banner with ro
+with open("banner.txt", "r", encoding="utf-8") as text:
+    # Read File
+    banner = text.read()
+print(f"""{banner}""")
 print("\n")
+
 # List Config
 print("=" * 25 + "Configure Access Point" + "=" * 25)
 while True:
@@ -80,6 +69,29 @@ sh_wlan = (" interface wireless print")
 identity = (f"system identity set name={id}")
 sh_id = ("system identity print ")
 
+# Check Data Router
+def check_id_exists(filename, id):
+    with open(filename, mode='r', newline='') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row and row[0] == id:
+                return True
+    return False
+
+# Import Data Router
+def write_to_csv(filename):
+    # Check row id
+    if check_id_exists(filename, id):
+        print(f"'Identity '{id}' sudah terdaftar di {filename}.")
+        print('\n')
+        sys.exit()
+    # Open file
+    with open(filename, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([id, ip, ssid, password, now])
+filename = 'data_router.csv'
+write_to_csv(filename)
+
 # Executed Command
 config = [
     enabled_wifi,
@@ -105,15 +117,5 @@ for post in config:
     for line in stdout:
         print(line.strip('\n'))
 
-# CSV
-def write_to_csv(filename):
-    # Membuka file untuk menulis
-    with open(filename, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        
-        # Menulis csv
-        writer.writerow([id, ip, ssid, password])
-filename = 'data_router.csv'
-write_to_csv(filename)
 # Closed Connections
 ssh_client.close()
