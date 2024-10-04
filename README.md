@@ -75,8 +75,9 @@ SSID:
 Password:
 ```
 
-<hr />
-
-<footer align="center">
-        &copy; 2025 forkits. All rights reserved.
-</footer>
+<br />
+<p  align="center">
+    <footer>
+            &copy; 2025 forkits. All rights reserved.
+    </footer>
+</p>
