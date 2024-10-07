@@ -1,16 +1,27 @@
 import paramiko #include library paramiko
-import getpass
 import datetime
 import csv
 import sys
+import random
 
 # TimeStamp
 now = datetime.datetime.now()
 
+# Generate Password
+chars = 'abcdefghijklmnopqrstuvwxyz1234567890'
+number = 1 # Buat 1 line password
+length = 8 # Jumalah karakter acak
+
+for pwd in range(number):
+    passwords = ''
+    for pwd in range(length):
+        passwords += random.choice(chars)
+    random_pas = passwords
+
 #inisialisasi connection SSH with paramiko
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh_client.connect(hostname='192.168.88.1', username='admin', password='')
+ssh_client.connect(hostname='192.168.76.177', username='admin', password='')
 
 # open file Banner with ro
 with open("banner.txt", "r", encoding="utf-8") as text:
@@ -34,10 +45,9 @@ while True:
     if not ssid:
         print("Error: SSID tidak boleh kosong. Silakan coba lagi.")
         continue
-    password = getpass.getpass()
-    if not password:
-        print("Error: Password tidak boleh kosong. Silakan coba lagi.")
-        continue
+    password = random_pas
+    print(f"Password: {password}")
+
     break
 print("\n")
 
@@ -69,6 +79,16 @@ sh_wlan = (" interface wireless print")
 identity = (f"system identity set name={id}")
 sh_id = ("system identity print ")
 
+stdin, stdout, stderr = ssh_client.exec_command(' system routerboar print ')
+
+routerboard = {}
+for line in stdout:
+    result = line.strip('\n')
+    if ':' in result:
+        key, value = result.split(':', 1)
+        routerboard[key.strip()] = value.strip()
+model = routerboard['model']
+
 # Check Data Router
 def check_id_exists(filename, id):
     with open(filename, mode='r', newline='') as file:
@@ -88,7 +108,7 @@ def write_to_csv(filename):
     # Open file
     with open(filename, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([id, ip, ssid, password, now])
+        writer.writerow([id, ip, ssid, password, model, now])
 filename = 'data_router.csv'
 write_to_csv(filename)
 
