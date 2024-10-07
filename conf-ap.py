@@ -79,6 +79,7 @@ sh_wlan = (" interface wireless print")
 identity = (f"system identity set name={id}")
 sh_id = ("system identity print ")
 
+# Grep data model router
 stdin, stdout, stderr = ssh_client.exec_command(' system routerboar print ')
 
 routerboard = {}
